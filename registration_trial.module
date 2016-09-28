@@ -1,0 +1,181 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function registration_trial_menu() {
+
+  $items = array();
+  $items['registration/trial'] = array(
+    'title' => 'Register for a 14-day Free Trial',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('registration_trial_form'),
+    'access callback' => TRUE
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function registration_trial_form($form, &$form_state) {
+  
+  $country_array = _registration_trial_get_country_options();
+ 
+  $form['description'] = array(
+    '#type' => 'item',
+    '#title' => t('Register for a 14-day Free Trial'),
+  );
+
+  $form['domain']['subdomain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Domain'),
+    '#default_value' => 'Domain',
+    '#required' => TRUE,
+  );
+  
+  $form['domain']['domain'] = array(
+    '#markup' => t('.bpmonline.com'),
+  );
+
+  $form['login'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Login'),
+    '#default_value' => 'Login',
+    '#required' => TRUE,
+  );
+
+  $form['country'] = array(
+    '#type' => 'select',
+    '#title' => t('Country'),
+    '#options' => $country_array,
+    '#default_value' => 'Country',
+    '#required' => TRUE,
+  );
+
+  $form['city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#default_value' => 'City',
+  );
+
+  $form['phone']['code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Code'),
+    '#default_value' => 'Code',
+    '#required' => TRUE,
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#element_validate' => array('element_validate_number'),
+  );
+
+  $form['phone']['number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone'),
+    '#default_value' => 'Phone',
+    '#required' => TRUE,
+    '#size' => 9,
+    '#maxlength' => 9,
+    '#element_validate' => array('element_validate_number'),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Register',
+  );
+
+  $form['link'] = array(
+    '#markup' => l(t('Create Accounts'),'node'),
+  );
+  return $form;
+}
+
+/**
+ * Implements _form_validate().
+ */
+function registration_trial_form_validate($form, &$form_state) {
+  //Subdomain name must be unique
+  $domain = trim($form_state['values']['subdomain']);
+  $query = db_select('registration_trial', 'r')
+    ->fields('r', array('rid'))
+    ->condition('r.subdomain', $domain)
+    ->range(0, 1)
+    ->execute();
+  $domain_existed_result = $query->fetchObject();
+  if (empty($domain)) {
+    form_set_error('subdomain', t('Enter your domain, please.'));
+  }
+  elseif($domain_existed_result) {
+    form_set_error('subdomain', t('Your domain has already registered.'));
+  }
+  //Login name must be not empty
+  $login = trim($form_state['values']['login']);
+  if (empty($login)) {
+    form_set_error('login', t('Enter your login, please.'));
+  }
+  //Country name must be selected from a list and not empty
+  $country = trim($form_state['values']['country']);
+  $country_options = _registration_trial_get_country_options();
+  if (empty($country) || empty($country_options[$country]) ) {
+    form_set_error('country', t('Choose your country, please.'));
+  }
+  //Code must contain 3 digits (element_validate_number checked numbers before)
+  $code = trim($form_state['values']['code']);
+  if (mb_strlen($code) < 3) {
+    form_set_error('code', t('Enter a valid phone code, please.'));
+  }
+  //Phone number must contain 9 digits (element_validate_number checked numbers before)
+  $number = trim($form_state['values']['number']);
+  if (mb_strlen($number) < 9) {
+    form_set_error('number', t('Enter a valid phone number, please.'));
+  }
+}
+
+/**
+ * Implements _form_submit
+ */
+function registration_trial_form_submit($form, &$form_state){
+  //Write a record in 'registration_trial' table
+  $subdomain   = trim($form_state['values']['subdomain']);
+  $login   = trim($form_state['values']['login']);
+  $country   = trim($form_state['values']['country']);
+  $city  = !empty($form_state['values']['city']) ? trim($form_state['values']['city']) : '';
+  $phone  = trim($form_state['values']['code'] . $form_state['values']['number']);
+  $created = time();
+
+  db_insert('registration_trial')
+    ->fields(array(
+      'subdomain' => $subdomain,
+      'login' => $login,
+      'country' => $country,
+      'city' => $city,
+      'phone' => $phone,
+      'created' => $created,
+    ))
+    ->execute();
+  //Send a mail
+  $mail_str  = 'User with login: ' . $login . ' and subdomain ' . $subdomain . "\r\n";
+  $mail_str .= 'from '. $country . (!empty($city) ? ', ' . $city : '') . ', cell:' . $phone . "\r\n";
+  $mail_str .= 'was registered ' . date('Y-m-d H:i') . "\r\n";
+  $subj_str = 'New trial registration';
+
+  drupal_mail('system', 'mail', variable_get('site_mail'), language_default(), array(
+    'context' => array(
+      'subject' => $subj_str,
+      'message' => $mail_str,
+    )
+  ));
+  //Show congratulation meassage
+  drupal_set_message(t('Congratulations!'));
+}
+
+/**
+ * Returns an array of countries (a small part of country_get_list)
+ */
+function _registration_trial_get_country_options() {
+  $country_array['UA'] = 'Ukraine';
+  $country_array['PL'] = 'Poland';
+  $country_array['RU'] = 'Russia';
+
+  return $country_array;
+}

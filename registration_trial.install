@@ -1,0 +1,98 @@
+<?php
+/**
+ * Implements hook_schema()
+ */
+function registration_trial_schema(){
+    $schema['registration_trial'] = array(
+        'description' => 'The table for storing the subscriber data.',
+        'fields' => array(
+            'rid' => array(
+                'description' => 'The primary identifier for subscriber.',
+                'type' => 'serial',
+                'not null' => TRUE,
+                'unsigned' => TRUE,
+            ),
+            'subdomain' => array(
+                'description' => 'Subdomain.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'login' => array(
+                'description' => 'Login.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'country' => array(
+                'description' => 'Country.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'city' => array(
+                'description' => 'City.',
+                'type' => 'varchar',
+                'length' => 255,
+                'default' => '',
+            ),
+            'phone' => array(
+                'description' => 'Cell phone.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'created' => array(
+              'description' => 'The Unix timestamp of the registration creation time.',
+              'type' => 'int',
+              'not null' => TRUE,
+              'default' => 0,
+            ),
+        ),
+        'indexes' => array(
+          'subd_name'        => array('subdomain'),
+          'reg_created'        => array('created'),
+          ),
+        'primary key' => array('rid'),
+    );
+    return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function registration_trial_install() {
+/*
+    $test_data_array[0]['subdomain'] = 'test1';
+    $test_data_array[0]['login'] = 'test1';
+    $test_data_array[0]['country'] = 'test1';
+    $test_data_array[0]['city'] = 'test1';
+    $test_data_array[0]['phone'] = 'test1';
+
+    $test_data_array[]['subdomain'] = 'test2';
+    $test_data_array[]['login'] = 'test2';
+    $test_data_array[]['country'] = 'test2';
+    $test_data_array[]['city'] = 'test2';
+    $test_data_array[]['phone'] = 'test2';
+
+    $test_data_array[]['subdomain'] = 'test3';
+    $test_data_array[]['login'] = 'test3';
+    $test_data_array[]['country'] = 'test3';
+    $test_data_array[]['city'] = 'test3';
+    $test_data_array[]['phone'] = 'test3';
+*/
+    $test_data_array[] = 'test1';
+    $test_data_array[] = 'test2';
+    $test_data_array[] = 'test3';
+    foreach($test_data_array as $subdomain) {
+        db_insert('registration_trial')
+                ->fields(array(
+                        'subdomain' => $subdomain,
+                ))
+                ->execute();
+    }
+}
