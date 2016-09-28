@@ -4,6 +4,7 @@ package = Test task
 dependencies[] = jquery_update
 scripts[] = js/registration_trial_phonemask.js
 scripts[] = js/registration_trial_cleardefault.js
+scripts[] = js/registration_trial_validation.js
 scripts[] = js/jquery.maskedinput.min.js
 version = VERSION
 core = 7.x
