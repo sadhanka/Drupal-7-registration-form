@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Implements hook_menu().
  */
@@ -64,7 +65,7 @@ function registration_trial_form($form, &$form_state) {
     '#title' => t('Code'),
     '#default_value' => 'Code',
     '#required' => TRUE,
-    '#size' => 3,
+    '#size' => 10,
     '#maxlength' => 3,
     '#element_validate' => array('element_validate_number'),
   );
@@ -74,9 +75,9 @@ function registration_trial_form($form, &$form_state) {
     '#title' => t('Phone'),
     '#default_value' => 'Phone',
     '#required' => TRUE,
-    '#size' => 9,
-    '#maxlength' => 9,
-    '#element_validate' => array('element_validate_number'),
+    '#size' => 15,
+    '#maxlength' => 15,
+    //'#element_validate' => array('element_validate_number'),
   );
 
   $form['submit'] = array(
@@ -119,14 +120,16 @@ function registration_trial_form_validate($form, &$form_state) {
   if (empty($country) || empty($country_options[$country]) ) {
     form_set_error('country', t('Choose your country, please.'));
   }
-  //Code must contain 3 digits (element_validate_number checked numbers before)
+  //Code must contain 2 digits (38 for Ukraine)
   $code = trim($form_state['values']['code']);
-  if (mb_strlen($code) < 3) {
-    form_set_error('code', t('Enter a valid phone code, please.'));
+  $code_numbers_only = preg_replace("/[^0-9]/", "", $code);
+  if (mb_strlen($code_numbers_only) != 2) {
+    form_set_error('code', t('Enter a valid country code, please.'));
   }
-  //Phone number must contain 9 digits (element_validate_number checked numbers before)
+  //Phone number must contain 10 digits
   $number = trim($form_state['values']['number']);
-  if (mb_strlen($number) < 9) {
+  $numbers_only = preg_replace("/[^0-9]/", "", $number);
+  if (mb_strlen($numbers_only) != 10) {
     form_set_error('number', t('Enter a valid phone number, please.'));
   }
 }
@@ -140,7 +143,9 @@ function registration_trial_form_submit($form, &$form_state){
   $login   = trim($form_state['values']['login']);
   $country   = trim($form_state['values']['country']);
   $city  = !empty($form_state['values']['city']) ? trim($form_state['values']['city']) : '';
-  $phone  = trim($form_state['values']['code'] . $form_state['values']['number']);
+  $code_numbers_only = preg_replace("/[^0-9]/", "", $form_state['values']['code']);
+  $numbers_only = preg_replace("/[^0-9]/", "", $form_state['values']['number']);
+  $phone  = $code_numbers_only . $numbers_only;
   $created = time();
 
   db_insert('registration_trial')
