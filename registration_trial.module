@@ -7,12 +7,11 @@ function registration_trial_menu() {
 
   $items = array();
   $items['registration/trial'] = array(
-    'title' => 'Register for a 14-day Free Trial',
+    'title' => 'Terrasoft',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('registration_trial_form'),
     'access callback' => TRUE
   );
-
   return $items;
 }
 
@@ -30,54 +29,50 @@ function registration_trial_form($form, &$form_state) {
 
   $form['domain']['subdomain'] = array(
     '#type' => 'textfield',
-    '#title' => t('Domain'),
-    '#default_value' => 'Domain',
     '#required' => TRUE,
+    '#attributes' => array('placeholder' => t('Domain*')),
   );
   
   $form['domain']['domain'] = array(
+    '#type' => 'item',
     '#markup' => t('.bpmonline.com'),
+    '#prefix' => '<div class="domain-name-ext">',
+    '#suffix' => '</div>',
   );
 
   $form['login'] = array(
     '#type' => 'textfield',
-    '#title' => t('Login'),
-    '#default_value' => 'Login',
     '#required' => TRUE,
+    '#attributes' => array('placeholder' => t('Login*')),
   );
 
   $form['country'] = array(
     '#type' => 'select',
-    '#title' => t('Country'),
     '#options' => $country_array,
-    '#default_value' => 'Country',
     '#required' => TRUE,
+    '#default_value' => 0,
   );
 
   $form['city'] = array(
     '#type' => 'textfield',
-    '#title' => t('City'),
-    '#default_value' => 'City',
+    '#attributes' => array('placeholder' => t('City')),
   );
 
   $form['phone']['code'] = array(
     '#type' => 'textfield',
-    '#title' => t('Code'),
-    '#default_value' => 'Code',
     '#required' => TRUE,
     '#size' => 10,
     '#maxlength' => 3,
     '#element_validate' => array('element_validate_number'),
+    '#attributes' => array('placeholder' => t('Code*')),
   );
 
   $form['phone']['number'] = array(
     '#type' => 'textfield',
-    '#title' => t('Phone'),
-    '#default_value' => 'Phone',
     '#required' => TRUE,
     '#size' => 15,
     '#maxlength' => 15,
-    //'#element_validate' => array('element_validate_number'),
+    '#attributes' => array('placeholder' => t('Phone*')),
   );
 
   $form['submit'] = array(
@@ -85,9 +80,12 @@ function registration_trial_form($form, &$form_state) {
     '#value' => 'Register',
   );
 
-  $form['link'] = array(
-    '#markup' => l(t('Create Accounts'),'node'),
-  );
+  $form['actions']['link']['#suffix'] = '<div class="create-account-link">' . l(t('Create Accounts'),'node') . '</div>';
+  $form['actions']['menu_link']['#suffix'] = '<div class="bottom-menu-link">'
+      . '<ul class="bottom-menu-items">'
+      . '<li class="first bottom-menu-item">' . l(t('Main Page'),'node') . '</li>'
+      . '<li class="last bottom-menu-item">' . l(t('Contacts'),'node') . '</li>'
+      . '</div>';
   return $form;
 }
 
@@ -178,6 +176,7 @@ function registration_trial_form_submit($form, &$form_state){
  * Returns an array of countries (a small part of country_get_list)
  */
 function _registration_trial_get_country_options() {
+  $country_array[0] = 'Country*';
   $country_array['UA'] = 'Ukraine';
   $country_array['PL'] = 'Poland';
   $country_array['RU'] = 'Russia';
