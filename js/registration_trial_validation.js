@@ -5,7 +5,10 @@
       textfield.css("border-color", "red");
       return false;
     }
-    return true;
+    else {
+      textfield.css("border-color", "white");
+      return true;
+    }
   }
   function validateLoginTextfield() {
     var textfield = $("#edit-login");
@@ -13,31 +16,47 @@
       textfield.css("border-color", "red");
       return false;
     }
-    return true;
+    else {
+      textfield.css("border-color", "white");
+      return true;
+    }
   }
   function validateCountryTextfield() {
     var textfield = $("#edit-country");
-    if(!textfield.val().length) {
+    if(textfield.val().length < 2) {
       textfield.css("border-color", "red");
       return false;
     }
-    return true;
+    else {
+      textfield.css("border-color", "white");
+      return true;
+    }
   }
   function validateCodeTextfield() {
     var textfield = $("#edit-code");
-    if(!textfield.val().length || textfield.val().length != 3) {
+    var code_numbers = textfield.val();
+    code_numbers = code_numbers.replace(/\D/g,'');
+    if(code_numbers.length < 2) {
       textfield.css("border-color", "red");
       return false;
     }
-    return true;
+    else {
+      textfield.css("border-color", "white");
+      return true;
+    }
   }
   function validateNumberTextfield() {
     var textfield = $("#edit-number");
-    if(!textfield.val().length) {
+    var num_numbers = textfield.val();
+    num_numbers = num_numbers.replace(/\D/g,'');
+    if(num_numbers.length < 10) {
       textfield.css("border-color", "red");
       return false;
     }
-    return true;
+    else {
+      textfield.css("border-color", "white");
+      return true;
+    }
   }
   function domainFieldListener() {
     $("#edit-subdomain").once("subdomain_textfield", function(){
